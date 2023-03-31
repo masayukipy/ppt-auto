@@ -1,6 +1,7 @@
 import collections  # noqa
 import collections.abc  # noqa
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -38,4 +39,9 @@ def each(link):
 
 
 # each("https://codephil.org/fxauto/")
-all()
+# all()
+if sys.argv[1] == "all":
+    all()
+else:
+    text = input("Enter URL: ")
+    each(text)
