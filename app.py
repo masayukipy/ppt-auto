@@ -7,13 +7,6 @@ from pptx.util import Pt
 
 from utils.scrape import Codephil
 
-# prs = Presentation()
-# subtitle = slide.placeholders[1]
-
-# title.text = "Hello, World!"
-# subtitle.text = "python-pptx was here!"
-
-# prs.save("test.pptx")
 font_size = 42
 
 
@@ -55,7 +48,7 @@ def all():
         create_slide(prs, article["title"])
         for chapter in article["content"]:
             create_slide(prs, chapter["content"])
-        prs.save(f'{article["title"]}.pptx')
+        prs.save(f'ppt/{article["title"]}.pptx')
 
 
 all()
