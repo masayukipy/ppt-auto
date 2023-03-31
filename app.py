@@ -37,4 +37,5 @@ def each(link):
     drive.upload_file(root_id, path)
 
 
-each("https://codephil.org/fxauto/")
+# each("https://codephil.org/fxauto/")
+all()
