@@ -6,6 +6,7 @@ from pptx import Presentation
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Pt
 
+from utils.drive import Drive
 from utils.scrape import Codephil
 
 font_size = 42
@@ -18,7 +19,7 @@ def create_slide(prs, chapter):
     mul_text = ""
     while True:
         if len(text) > 15:
-            mul_text = text[:15] + "\n"
+            mul_text += text[:15] + "\n"
             text = text[15:]
         else:
             mul_text += text

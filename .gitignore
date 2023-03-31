@@ -3,3 +3,6 @@
 .env
 ppt
 img
+client_secrets.json
+credentials
+settings.yaml

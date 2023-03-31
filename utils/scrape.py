@@ -87,7 +87,9 @@ class Codephil:
             content = ""
             top_flag = True
             img_flag = True
-            for tag in p_h2_h3_tag:
+            name = ""
+            category = ""
+            for idx, tag in enumerate(p_h2_h3_tag):
                 if not tag.text.strip() == "":
                     content += tag.text.strip() + "\n"
                 if tag.name == "img" and img_flag:
@@ -104,30 +106,48 @@ class Codephil:
                         top["content"] = content
                         article.append(top)
                         top_flag = False
+                        name = tag.text.strip()
                     else:
                         article.append(
                             {
-                                "category": "chapter",
-                                "name": tag.text,
+                                "category": category,
+                                "name": name,
                                 "content": content,
                                 "img_link": img_link,
                                 "img_path": img_path,
                             }
                         )
+                        name = tag.text.strip()
                     content = ""
+                    category = "chapter"
                     img_flag = True
+                    img_path = None
                 if tag.name == "h3":
                     article.append(
                         {
                             "category": "section",
-                            "name": tag.text,
+                            "name": name,
                             "content": content,
                             "img_link": img_link,
                             "img_path": img_path,
                         }
                     )
+                    name = tag.text.strip()
                     img_flag = True
+                    img_path = None
                     content = ""
+                    category = "section"
+
+                if idx == len(p_h2_h3_tag) - 1:
+                    article.append(
+                        {
+                            "category": category,
+                            "name": name,
+                            "content": content,
+                            "img_link": img_link,
+                            "img_path": img_path,
+                        }
+                    )
             result.append(article)
 
         return result
