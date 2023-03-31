@@ -4,21 +4,32 @@ from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
+from PIL import Image
 
 
 class Codephil:
 
+    opacity = 20
     url = "https://codephil.org/"
 
     def __init__(self) -> None:
         pass
 
     def download_img(self, link, path):
-        resp = requests.get(link, stream=True)
-        resp.raw.decode_content = True
-        # save image
-        with open(path, "wb") as f:
-            shutil.copyfileobj(resp.raw, f)
+        try:
+            resp = requests.get(link, stream=True)
+            resp.raw.decode_content = True
+            # save image
+            with open(path, "wb") as f:
+                shutil.copyfileobj(resp.raw, f)
+
+            img = Image.open(path)
+            img.putalpha(self.opacity)
+            re_path = "".join(path.split(".")[:-1]) + ".png"
+            img.save(re_path, "png")
+            return re_path
+        except:  # noqa
+            return False
 
     def run(self):
         resp = requests.get(self.url)
@@ -29,7 +40,6 @@ class Codephil:
         for link in link_list:
             resp = requests.get(link)
             soup = BeautifulSoup(resp.text, features="html.parser")
-            html_content = str(soup)
 
             article = {
                 "title": None,
@@ -37,27 +47,35 @@ class Codephil:
                 "top_img_link": None,
                 "top_img_path": None,
                 "top_content": None,
-                "chapter": [],  # {"category": "chapter", "name": "asdf", "content": "asdf3e", "img_link": "", "img_path": ""}
+                "chapter": [],
+                # {"category": "chapter", "name": "asdf", "content": "asdf3e", "img_link": "", "img_path": ""}
             }
 
+            article = []
+
+            top = {}
             # title
-            article["title"] = soup.find("h1").text
-            article["link"] = link
-            dir_path = f"img/{article['title']}"
+            top["category"] = "top"
+            top["name"] = soup.find("h1").text
+            top["link"] = link
+            dir_path = f"img/{top['name']}"
             Path(dir_path).mkdir(parents=True, exist_ok=True)
 
             # top image link
             try:
-                article["top_img_link"] = soup.find(
+                top["img_link"] = soup.find(
                     "img", attrs={"class": "p-articleThumb__img"}
                 )["data-src"]
-                article["top_img_path"] = (
-                    dir_path + "/" + article["top_img_link"].split("/")[-1]
-                )
-                self.download_img(article["top_img_link"], article["top_img_path"])
-            except:
-                article["top_img_link"] = None
-                article["top_img_path"] = None
+                top["img_path"] = dir_path + "/" + top["img_link"].split("/")[-1]
+                _img_path = self.download_img(top["img_link"], top["img_path"])
+                if not _img_path:
+                    top["img_path"] = None
+                else:
+                    top["img_path"] = _img_path
+
+            except:  # noqa
+                top["img_link"] = None
+                top["img_path"] = None
 
             swell_tag = soup.find_all("div", attrs={"class": "swell-block-balloon"})
             [x.decompose() for x in swell_tag]
@@ -70,20 +88,24 @@ class Codephil:
             top_flag = True
             img_flag = True
             for tag in p_h2_h3_tag:
-                content += tag.text + "\n"
+                if not tag.text.strip() == "":
+                    content += tag.text.strip() + "\n"
                 if tag.name == "img" and img_flag:
                     img_link = tag["src"]
-                    if not "http" in img_link:
+                    if "http" not in img_link:
                         img_link = tag["data-src"]
                     img_path = dir_path + "/" + img_link.split("/")[-1]
-                    self.download_img(img_link, img_path)
+                    img_path = self.download_img(img_link, img_path)
+                    if not img_path:
+                        img_path = None
                     img_flag = False
                 if tag.name == "h2":
                     if top_flag:
-                        article["top_content"] = content
+                        top["content"] = content
+                        article.append(top)
                         top_flag = False
                     else:
-                        article["chapter"].append(
+                        article.append(
                             {
                                 "category": "chapter",
                                 "name": tag.text,
@@ -95,7 +117,7 @@ class Codephil:
                     content = ""
                     img_flag = True
                 if tag.name == "h3":
-                    article["chapter"].append(
+                    article.append(
                         {
                             "category": "section",
                             "name": tag.text,
@@ -108,68 +130,4 @@ class Codephil:
                     content = ""
             result.append(article)
 
-            # # chapter tag list
-            # chapter_tag_list = soup.find_all("div", attrs={"class": "post_content"})[
-            #     0
-            # ].find_all("h2")
-            # chapter_list = [
-            #     {"category": "chapter", "content": x.text.strip()}
-            #     for x in chapter_tag_list
-            # ]
-
-            # # section tag list
-            # section_tag_list = soup.find_all("div", attrs={"class": "post_content"})[
-            #     0
-            # ].find_all("h3")
-            # section_list = [
-            #     {"category": "section", "content": x.text.strip()}
-            #     for x in section_tag_list
-            # ]
-
-            # # imgae tag list
-            # img_tag_list = soup.find_all(attrs={"class": "size-full"})
-            # img_tag_list = set(img_tag_list)
-            # img_list = []
-            # for tag in img_tag_list:
-            #     if tag.name == "figure":
-            #         img_list.append({
-            #             "category": "img",
-            #             "content": tag.img["data-src"]
-            #         })
-            #     else:
-            #         try:
-            #             img_list.append({
-            #                 "category": "img",
-            #                 "content": tag["data-src"]
-            #             })
-            #         except:
-            #             img_list.append({
-            #                 "category": "img",
-            #                 "content": tag["src"]
-            #             })
-
-            # for idx, item in enumerate(chapter_list):
-            #     index = html_content.index(item["content"])
-            #     chapter_list[idx]["index"] = index
-            # for idx, item in enumerate(section_list):
-            #     index = html_content.index(item["content"])
-            #     section_list[idx]["index"] = index
-            # for idx, item in enumerate(img_list):
-            #     index = html_content.index(item["content"])
-            #     img_list[idx]["index"] = index
-            #     path = Path(f"img/{title}").mkdir(parents=True, exist_ok=True)
-
-            #     url = item["content"]
-
-            #     item["content"] = path
-
-            # temp_list = chapter_list + section_list + img_list
-            # index_list = [x["index"] for x in temp_list]
-            # index_list = sorted(index_list)
-            # sorted_list = []
-            # for idx in index_list:
-            #     temp = [x for x in temp_list if x["index"] == idx][0]
-            #     sorted_list.append(temp)
-            # result.append({"title": title, "img_link": top_img_link, "url": link, "content": sorted_list})
-
-        return result
+            return result

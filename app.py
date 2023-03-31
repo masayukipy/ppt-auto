@@ -1,5 +1,6 @@
 import collections  # noqa
 import collections.abc  # noqa
+from pathlib import Path
 
 from pptx import Presentation
 from pptx.enum.text import PP_ALIGN
@@ -9,8 +10,11 @@ from utils.scrape import Codephil
 
 font_size = 42
 
+Path("ppt").mkdir(parents=True, exist_ok=True)
 
-def create_slide(prs, text):
+
+def create_slide(prs, chapter):
+    text = chapter["name"]
     mul_text = ""
     while True:
         if len(text) > 15:
@@ -24,14 +28,16 @@ def create_slide(prs, text):
 
     slide_layout = prs.slide_layouts[6]
     slide = prs.slides.add_slide(slide_layout)
-    tx_box = slide.shapes.add_textbox(0, 0, prs.slide_width, Pt(font_size) * mul_len)
 
+    # text box
+    tx_box = slide.shapes.add_textbox(0, 0, prs.slide_width, Pt(font_size) * mul_len)
     tf = tx_box.text_frame
     p = tf.paragraphs[0]
     run = p.add_run()
     run.text = mul_text
     p.alignment = PP_ALIGN.CENTER
 
+    # font
     font = run.font
     font.name = "MS Mincho"
     font.size = Pt(font_size)
@@ -40,15 +46,20 @@ def create_slide(prs, text):
         (prs.slide_height - Pt(font_size + 20 + (mul_len - 1) * font_size)) / 2
     )
 
+    # image
+    if not chapter["img_path"] is None:
+        slide.shapes.add_picture(
+            chapter["img_path"], 0, 0, prs.slide_width, prs.slide_height
+        )
+
 
 def all():
     article_list = Codephil().run()
     for article in article_list:
         prs = Presentation()
-        create_slide(prs, article["title"])
-        for chapter in article["content"]:
-            create_slide(prs, chapter["content"])
-        prs.save(f'ppt/{article["title"]}.pptx')
+        for chapter in article:
+            create_slide(prs, chapter)
+        prs.save(f'ppt/{article[0]["name"]}.pptx')
 
 
 all()
