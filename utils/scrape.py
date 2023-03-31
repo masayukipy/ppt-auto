@@ -130,4 +130,4 @@ class Codephil:
                     content = ""
             result.append(article)
 
-            return result
+        return result

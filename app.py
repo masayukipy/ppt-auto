@@ -51,6 +51,9 @@ def create_slide(prs, chapter):
         slide.shapes.add_picture(
             chapter["img_path"], 0, 0, prs.slide_width, prs.slide_height
         )
+    notes_slide = slide.notes_slide
+    text_frame = notes_slide.notes_text_frame
+    text_frame.text = chapter["content"]
 
 
 def all():
