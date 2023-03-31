@@ -49,6 +49,6 @@ class Codephil:
             for idx in index_list:
                 temp = [x for x in temp_list if x["index"] == idx][0]
                 sorted_list.append(temp)
-            result.append(sorted_list)
+            result.append({"title": soup.find("h1").text, "content": sorted_list})
 
-        return link_list
+        return result
