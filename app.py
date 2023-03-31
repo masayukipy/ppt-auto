@@ -1,10 +1,19 @@
 import collections  # noqa
 import collections.abc  # noqa
+import os
+from pathlib import Path
 
+from dotenv import load_dotenv
 from pptx import Presentation
 
+from utils.drive import Drive
 from utils.ppt import create_slide
 from utils.scrape import Codephil
+
+load_dotenv()
+Path("ppt").mkdir(parents=True, exist_ok=True)
+root_id = os.getenv("ROOTID")
+drive = Drive()
 
 
 def all():
@@ -13,7 +22,9 @@ def all():
         prs = Presentation()
         for chapter in article:
             create_slide(prs, chapter)
-        prs.save(f'ppt/{article[0]["name"]}.pptx')
+        path = f'ppt/{article[0]["name"]}.pptx'
+        prs.save(path)
+        drive.upload_file(root_id, path)
 
 
 def each(link):
@@ -21,7 +32,9 @@ def each(link):
     prs = Presentation()
     for chpater in article:
         create_slide(prs, chpater)
-    prs.save(f'ppt/{article[0]["name"]}.pptx')
+    path = f'ppt/{article[0]["name"]}.pptx'
+    prs.save(path)
+    drive.upload_file(root_id, path)
 
 
 each("https://codephil.org/fxauto/")

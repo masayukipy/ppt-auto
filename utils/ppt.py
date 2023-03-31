@@ -1,20 +1,17 @@
-from pathlib import Path
-
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Pt
 
-font_size = 42
-
-Path("ppt").mkdir(parents=True, exist_ok=True)
+font_size = 52
+col_letters = 14
 
 
 def create_slide(prs, chapter):
     text = chapter["name"]
     mul_text = ""
     while True:
-        if len(text) > 15:
-            mul_text += text[:15] + "\n"
-            text = text[15:]
+        if len(text) > col_letters:
+            mul_text += text[:col_letters] + "\n"
+            text = text[col_letters:]
         else:
             mul_text += text
             break
@@ -49,3 +46,4 @@ def create_slide(prs, chapter):
     notes_slide = slide.notes_slide
     text_frame = notes_slide.notes_text_frame
     text_frame.text = chapter["content"]
+    return

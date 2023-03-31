@@ -29,3 +29,15 @@ class Drive:
         file.SetContentFile(local_path)
         file.Upload()
         return file["id"]
+
+    def create_driver_directory(self, directory_name: str, parent_id="root"):
+        file_metadata = {
+            "title": directory_name,
+            # "parents": [{"id": parent_id}],
+            "mimeType": "application/vnd.google-apps.folder",
+        }
+        if parent_id != "root":
+            file_metadata["parents"] = [{"id": parent_id}]
+        folder = drive.CreateFile(file_metadata)
+        folder.Upload()
+        return folder["id"]
