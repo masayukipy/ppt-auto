@@ -31,6 +31,7 @@ def all():
 def each(link):
     article = Codephil().req_article(link)
     prs = Presentation()
+    prs.slide_height = int(prs.slide_width * 9 / 16)
     for chpater in article:
         create_slide(prs, chpater)
     path = f'ppt/{article[0]["name"]}.pptx'

@@ -1,11 +1,13 @@
+from PIL import Image
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Pt
 
 font_size = 52
-col_letters = 14
+col_letters = 12
 
 
 def create_slide(prs, chapter):
+    prs.slide_height = int(prs.slide_width * 9 / 16)
     text = chapter["name"]
     mul_text = ""
     while True:
@@ -31,7 +33,7 @@ def create_slide(prs, chapter):
 
     # font
     font = run.font
-    font.name = "MS Mincho"
+    font.name = "Arial"
     font.size = Pt(font_size)
     tx_box.left = int((prs.slide_width - tx_box.width) / 2)
     tx_box.top = int(
@@ -40,8 +42,14 @@ def create_slide(prs, chapter):
 
     # image
     if not chapter["img_path"] is None:
+        img = Image.open(chapter["img_path"])
+        hg = int(img.height * prs.slide_width / img.width)
         slide.shapes.add_picture(
-            chapter["img_path"], 0, 0, prs.slide_width, prs.slide_height
+            chapter["img_path"],
+            0,
+            int(0 - (hg - prs.slide_height) / 2),
+            prs.slide_width,
+            hg,
         )
     notes_slide = slide.notes_slide
     text_frame = notes_slide.notes_text_frame
